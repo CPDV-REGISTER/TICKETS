@@ -18,217 +18,259 @@
 
   <style>
     :root { --sidebar-width: 250px; }
-    body { display: flex; min-height: 100vh; background-color: #f8f9fa; }
+    body { min-height: 100vh; background-color: #f8f9fa; }
+    #wrapper { display: flex; width: 100%; min-height: 100vh; }
     #sidebar { width: var(--sidebar-width); background-color: #2a3f54; color: #fff; flex-shrink: 0; }
     #sidebar .nav-link { color: #c7d1db; padding: 0.7rem 1rem; margin-bottom: 0.2rem; }
     #sidebar .nav-link:hover, #sidebar .nav-link.active { color: #fff; background-color: rgba(255, 255, 255, 0.15); }
     .main-content { flex-grow: 1; display: flex; flex-direction: column; }
     .sidebar-heading { font-size: 0.75rem; text-transform: uppercase; color: #8e9dae; padding: 0.8rem 1rem 0.2rem; }
+    
+    /* Overlay de Autenticación */
+    #login-screen {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: #2a3f54; z-index: 9999; display: flex; align-items: center; justify-content: center;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Sidebar Lateral -->
-  <nav id="sidebar" class="d-flex flex-column p-3">
-    <a href="#" class="d-flex align-items-center mb-3 text-white text-decoration-none fs-5 fw-bold">
-      <i class="fa-solid fa-graduation-cap me-2"></i> CPDV Solicitudes
-    </a>
-    <hr class="text-secondary">
-    
-    <div class="nav nav-pills flex-column" id="v-pills-tab" role="tablist">
-      <button class="nav-link active text-start" id="tab-home-btn" data-bs-toggle="pill" data-bs-target="#tab-home" type="button">
-        <i class="fa-solid fa-house me-2"></i> Inicio
-      </button>
-
-      <div class="sidebar-heading">Soporte y Compras</div>
-      <button class="nav-link text-start" id="tab-ticket-btn" data-bs-toggle="pill" data-bs-target="#tab-tickets" type="button">
-        <i class="fa-solid fa-ticket me-2"></i> Ticket de Soporte
-      </button>
-      <button class="nav-link text-start" id="tab-sbs-btn" data-bs-toggle="pill" data-bs-target="#tab-sbs" type="button">
-        <i class="fa-solid fa-cart-shopping me-2"></i> Solicitud Compra (SBS)
-      </button>
-
-      <div class="sidebar-heading">Espacios y Equipos</div>
-      <button class="nav-link text-start" id="tab-dep-btn" data-bs-toggle="pill" data-bs-target="#tab-dependencias" type="button">
-        <i class="fa-solid fa-building me-2"></i> Reserva Dependencias
-      </button>
-
-      <div class="sidebar-heading">Administración</div>
-      <button class="nav-link text-start" id="tab-user-btn" data-bs-toggle="pill" data-bs-target="#tab-usuarios" type="button">
-        <i class="fa-solid fa-users me-2"></i> Usuarios Autorizados
-      </button>
+  <!-- PANTALLA DE LOGIN -->
+  <div id="login-screen">
+    <div class="card shadow-lg border-0 p-4" style="width: 100%; max-width: 400px;">
+      <div class="text-center mb-4">
+        <i class="fa-solid fa-graduation-cap text-primary display-4 mb-2"></i>
+        <h4 class="fw-bold">Acceso CPDV</h4>
+        <p class="text-muted small">Ingresa con tus credenciales institucionales</p>
+      </div>
+      <form id="formLogin">
+        <div class="mb-3">
+          <label class="form-label">Correo Electrónico</label>
+          <input type="email" class="form-control" id="login_email" placeholder="usuario@colegiopedrodevaldivia.cl" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Contraseña</label>
+          <input type="password" class="form-control" id="login_pass" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 py-2">
+          <i class="fa-solid fa-right-to-bracket me-2"></i>Iniciar Sesión
+        </button>
+      </form>
     </div>
-  </nav>
+  </div>
 
-  <!-- Área de Contenido -->
-  <div class="main-content">
-    <header class="bg-white p-3 border-bottom d-flex justify-content-between align-items-center">
-      <h5 class="m-0 text-secondary">Sistema Integral de Solicitudes</h5>
-      <span class="badge bg-primary px-3 py-2"><i class="fa-solid fa-user me-1"></i> Admin Gabriel</span>
-    </header>
+  <!-- CONTENEDOR PRINCIPAL DEL SISTEMA -->
+  <div id="wrapper" style="display: none;">
 
-    <div class="container-fluid p-4">
-      <div class="tab-content" id="v-pills-tabContent">
+    <!-- Sidebar Lateral -->
+    <nav id="sidebar" class="d-flex flex-column p-3">
+      <a href="#" class="d-flex align-items-center mb-3 text-white text-decoration-none fs-5 fw-bold">
+        <i class="fa-solid fa-graduation-cap me-2"></i> CPDV Solicitudes
+      </a>
+      <hr class="text-secondary">
+      
+      <div class="nav nav-pills flex-column" id="v-pills-tab" role="tablist">
+        <button class="nav-link active text-start" id="tab-home-btn" data-bs-toggle="pill" data-bs-target="#tab-home" type="button">
+          <i class="fa-solid fa-house me-2"></i> Inicio
+        </button>
 
-        <!-- INICIO -->
-        <div class="tab-pane fade show active" id="tab-home" role="tabpanel">
-          <div class="card border-0 shadow-sm p-5 text-center bg-white">
-            <i class="fa-solid fa-layer-group text-primary display-3 mb-3"></i>
-            <h2>Panel General de Gestión</h2>
-            <p class="text-muted">Selecciona una opción del menú lateral para realizar o consultar requerimientos.</p>
-          </div>
-        </div>
+        <div class="sidebar-heading">Soporte y Compras</div>
+        <button class="nav-link text-start" id="tab-ticket-btn" data-bs-toggle="pill" data-bs-target="#tab-tickets" type="button">
+          <i class="fa-solid fa-ticket me-2"></i> Ticket de Soporte
+        </button>
+        <button class="nav-link text-start" id="tab-sbs-btn" data-bs-toggle="pill" data-bs-target="#tab-sbs" type="button">
+          <i class="fa-solid fa-cart-shopping me-2"></i> Solicitud Compra (SBS)
+        </button>
 
-        <!-- TICKETS DE SOPORTE -->
-        <div class="tab-pane fade" id="tab-tickets" role="tabpanel">
-          <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-primary text-white"><h5 class="m-0"><i class="fa-solid fa-plus me-2"></i>Nuevo Ticket de Soporte</h5></div>
-            <div class="card-body">
-              <form id="formTicket">
-                <div class="row g-3">
-                  <div class="col-md-4">
-                    <label class="form-label">Área</label>
-                    <select class="form-select" id="tk_tipo" required>
-                      <option value="Informática">Informática</option>
-                      <option value="Mantención">Mantención</option>
-                    </select>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label">Categoría</label>
-                    <input type="text" class="form-control" id="tk_cat" placeholder="Ej: Red, Pizarra, Enchufe" required>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label">Ubicación</label>
-                    <input type="text" class="form-control" id="tk_lugar" placeholder="Ej: Sala 12, Patios" required>
-                  </div>
-                  <div class="col-12">
-                    <label class="form-label">Detalle del requerimiento</label>
-                    <textarea class="form-control" id="tk_msg" rows="3" required></textarea>
-                  </div>
-                  <div class="col-12">
-                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane me-2"></i>Enviar Ticket</button>
-                  </div>
-                </div>
-              </form>
+        <div class="sidebar-heading">Espacios y Equipos</div>
+        <button class="nav-link text-start" id="tab-dep-btn" data-bs-toggle="pill" data-bs-target="#tab-dependencias" type="button">
+          <i class="fa-solid fa-building me-2"></i> Reserva Dependencias
+        </button>
+
+        <div class="sidebar-heading">Administración</div>
+        <button class="nav-link text-start" id="tab-user-btn" data-bs-toggle="pill" data-bs-target="#tab-usuarios" type="button">
+          <i class="fa-solid fa-users me-2"></i> Usuarios Autorizados
+        </button>
+      </div>
+
+      <div class="mt-auto">
+        <hr class="text-secondary">
+        <button class="btn btn-outline-light w-100 text-start" onclick="cerrarSesion()">
+          <i class="fa-solid fa-power-off me-2"></i>Cerrar Sesión
+        </button>
+      </div>
+    </nav>
+
+    <!-- Área de Contenido -->
+    <div class="main-content">
+      <header class="bg-white p-3 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="m-0 text-secondary">Sistema Integral de Solicitudes</h5>
+        <span class="badge bg-primary px-3 py-2" id="user-display"><i class="fa-solid fa-user me-1"></i> Sesión Activa</span>
+      </header>
+
+      <div class="container-fluid p-4">
+        <div class="tab-content" id="v-pills-tabContent">
+
+          <!-- INICIO -->
+          <div class="tab-pane fade show active" id="tab-home" role="tabpanel">
+            <div class="card border-0 shadow-sm p-5 text-center bg-white">
+              <i class="fa-solid fa-layer-group text-primary display-3 mb-3"></i>
+              <h2>Panel General de Gestión</h2>
+              <p class="text-muted">Selecciona una opción del menú lateral para realizar o consultar requerimientos.</p>
             </div>
           </div>
-        </div>
 
-        <!-- SOLICITUDES DE COMPRA (SBS) -->
-        <div class="tab-pane fade" id="tab-sbs" role="tabpanel">
-          <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-warning text-dark"><h5 class="m-0"><i class="fa-solid fa-cart-plus me-2"></i>Nueva Solicitud de Compra (SBS)</h5></div>
-            <div class="card-body">
-              <form id="formSBS">
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <label class="form-label">Categoría del Insumo</label>
-                    <input type="text" class="form-control" id="sbs_cat" placeholder="Ej: Librería, Herramientas, Aseo" required>
+          <!-- TICKETS DE SOPORTE -->
+          <div class="tab-pane fade" id="tab-tickets" role="tabpanel">
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-header bg-primary text-white"><h5 class="m-0"><i class="fa-solid fa-plus me-2"></i>Nuevo Ticket de Soporte</h5></div>
+              <div class="card-body">
+                <form id="formTicket">
+                  <div class="row g-3">
+                    <div class="col-md-4">
+                      <label class="form-label">Área</label>
+                      <select class="form-select" id="tk_tipo" required>
+                        <option value="Informática">Informática</option>
+                        <option value="Mantención">Mantención</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Categoría</label>
+                      <input type="text" class="form-control" id="tk_cat" placeholder="Ej: Red, Pizarra, Enchufe" required>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Ubicación</label>
+                      <input type="text" class="form-control" id="tk_lugar" placeholder="Ej: Sala 12, Patios" required>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label">Detalle del requerimiento</label>
+                      <textarea class="form-control" id="tk_msg" rows="3" required></textarea>
+                    </div>
+                    <div class="col-12">
+                      <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane me-2"></i>Enviar Ticket</button>
+                    </div>
                   </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Destino / Departamento</label>
-                    <input type="text" class="form-control" id="sbs_lugar" placeholder="Ej: Admin, Recepción" required>
-                  </div>
-                  <div class="col-12">
-                    <label class="form-label">Detalle de Materiales / Instrumentos Necesarios</label>
-                    <textarea class="form-control" id="sbs_msg" rows="3" required></textarea>
-                  </div>
-                  <div class="col-12">
-                    <button type="submit" class="btn btn-warning"><i class="fa-solid fa-cart-shopping me-2"></i>Enviar Solicitud SBS</button>
-                  </div>
-                </div>
-              </form>
+                </form>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- RESERVA DEPENDENCIAS Y DEPORTES -->
-        <div class="tab-pane fade" id="tab-dependencias" role="tabpanel">
-          <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-success text-white"><h5 class="m-0"><i class="fa-solid fa-calendar-plus me-2"></i>Reserva de Espacio / Audio / Deportes</h5></div>
-            <div class="card-body">
-              <form id="formDep">
-                <div class="row g-3">
-                  <div class="col-md-4">
-                    <label class="form-label">Tipo de Reserva</label>
-                    <select class="form-select" id="dep_tipo" required>
-                      <option value="Espacio General">Espacio / Aula / Auditorio</option>
-                      <option value="Audio y Video">Sistemas Audio / Amplificación</option>
-                      <option value="Deportes">Cancha / Gimnasio Deportivo</option>
-                    </select>
+          <!-- SOLICITUDES DE COMPRA (SBS) -->
+          <div class="tab-pane fade" id="tab-sbs" role="tabpanel">
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-header bg-warning text-dark"><h5 class="m-0"><i class="fa-solid fa-cart-plus me-2"></i>Nueva Solicitud de Compra (SBS)</h5></div>
+              <div class="card-body">
+                <form id="formSBS">
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label">Categoría del Insumo</label>
+                      <input type="text" class="form-control" id="sbs_cat" placeholder="Ej: Librería, Herramientas, Aseo" required>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Destino / Departamento</label>
+                      <input type="text" class="form-control" id="sbs_lugar" placeholder="Ej: Admin, Recepción" required>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label">Detalle de Materiales / Instrumentos Necesarios</label>
+                      <textarea class="form-control" id="sbs_msg" rows="3" required></textarea>
+                    </div>
+                    <div class="col-12">
+                      <button type="submit" class="btn btn-warning"><i class="fa-solid fa-cart-shopping me-2"></i>Enviar Solicitud SBS</button>
+                    </div>
                   </div>
-                  <div class="col-md-4">
-                    <label class="form-label">Responsable</label>
-                    <input type="text" class="form-control" id="dep_resp" placeholder="Nombre completo" required>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label">Lugar / Recinto</label>
-                    <input type="text" class="form-control" id="dep_lugar" placeholder="Ej: Multicancha 2" required>
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Fecha / Hora Inicio</label>
-                    <input type="text" class="form-control flatpickr" id="dep_inicio" required>
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Fecha / Hora Término</label>
-                    <input type="text" class="form-control flatpickr" id="dep_fin" required>
-                  </div>
-                  <div class="col-12">
-                    <label class="form-label">Motivo o Requerimiento Especial</label>
-                    <textarea class="form-control" id="dep_msg" rows="2" required></textarea>
-                  </div>
-                  <div class="col-12">
-                    <button type="submit" class="btn btn-success"><i class="fa-solid fa-calendar-check me-2"></i>Confirmar Reserva</button>
-                  </div>
-                </div>
-              </form>
+                </form>
+              </div>
             </div>
           </div>
+
+          <!-- RESERVA DEPENDENCIAS Y DEPORTES -->
+          <div class="tab-pane fade" id="tab-dependencias" role="tabpanel">
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-header bg-success text-white"><h5 class="m-0"><i class="fa-solid fa-calendar-plus me-2"></i>Reserva de Espacio / Audio / Deportes</h5></div>
+              <div class="card-body">
+                <form id="formDep">
+                  <div class="row g-3">
+                    <div class="col-md-4">
+                      <label class="form-label">Tipo de Reserva</label>
+                      <select class="form-select" id="dep_tipo" required>
+                        <option value="Espacio General">Espacio / Aula / Auditorio</option>
+                        <option value="Audio y Video">Sistemas Audio / Amplificación</option>
+                        <option value="Deportes">Cancha / Gimnasio Deportivo</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Responsable</label>
+                      <input type="text" class="form-control" id="dep_resp" placeholder="Nombre completo" required>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Lugar / Recinto</label>
+                      <input type="text" class="form-control" id="dep_lugar" placeholder="Ej: Multicancha 2" required>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Fecha / Hora Inicio</label>
+                      <input type="text" class="form-control flatpickr" id="dep_inicio" required>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Fecha / Hora Término</label>
+                      <input type="text" class="form-control flatpickr" id="dep_fin" required>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label">Motivo o Requerimiento Especial</label>
+                      <textarea class="form-control" id="dep_msg" rows="2" required></textarea>
+                    </div>
+                    <div class="col-12">
+                      <button type="submit" class="btn btn-success"><i class="fa-solid fa-calendar-check me-2"></i>Confirmar Reserva</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- USUARIOS AUTORIZADOS -->
+          <div class="tab-pane fade" id="tab-usuarios" role="tabpanel">
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-header bg-dark text-white"><h5 class="m-0"><i class="fa-solid fa-user-shield me-2"></i>Personal Autorizado</h5></div>
+              <div class="card-body">
+                <table class="table table-striped align-middle">
+                  <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th></tr></thead>
+                  <tbody>
+                    <tr><td>Gabriel Arias</td><td>g.arias@colegiopedrodevaldivia.cl</td><td><span class="badge bg-danger">Administrador</span></td></tr>
+                    <tr><td>Soporte Técnico</td><td>soporte@colegiopedrodevaldivia.cl</td><td><span class="badge bg-info text-dark">Técnico</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
         </div>
 
-        <!-- USUARIOS AUTORIZADOS -->
-        <div class="tab-pane fade" id="tab-usuarios" role="tabpanel">
-          <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-dark text-white"><h5 class="m-0"><i class="fa-solid fa-user-shield me-2"></i>Personal Autorizado</h5></div>
-            <div class="card-body">
-              <table class="table table-striped align-middle">
-                <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th></tr></thead>
-                <tbody>
-                  <tr><td>Gabriel Arias</td><td>g.arias@colegiopedrodevaldivia.cl</td><td><span class="badge bg-danger">Administrador</span></td></tr>
-                  <tr><td>Soporte Técnico</td><td>soporte@colegiopedrodevaldivia.cl</td><td><span class="badge bg-info text-dark">Técnico</span></td></tr>
-                </tbody>
+        <!-- TABLA GENERAL DE REGISTROS -->
+        <div class="card border-0 shadow-sm mt-4">
+          <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h5 class="m-0"><i class="fa-solid fa-list me-2"></i>Historial de Solicitudes</h5>
+            <button class="btn btn-sm btn-outline-light" onclick="cargarHistorial()"><i class="fa-solid fa-rotate me-1"></i>Actualizar</button>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle m-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>ID</th>
+                    <th>Módulo</th>
+                    <th>Detalle / Categoría</th>
+                    <th>Ubicación</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaGeneral"></tbody>
               </table>
             </div>
           </div>
         </div>
 
       </div>
-
-      <!-- TABLA GENERAL DE REGISTROS -->
-      <div class="card border-0 shadow-sm mt-4">
-        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-          <h5 class="m-0"><i class="fa-solid fa-list me-2"></i>Historial de Solicitudes</h5>
-          <button class="btn btn-sm btn-outline-light" onclick="cargarHistorial()"><i class="fa-solid fa-rotate me-1"></i>Actualizar</button>
-        </div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover align-middle m-0">
-              <thead class="table-light">
-                <tr>
-                  <th>ID</th>
-                  <th>Módulo</th>
-                  <th>Detalle / Categoría</th>
-                  <th>Ubicación</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="tablaGeneral"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
     </div>
   </div>
 
@@ -276,6 +318,45 @@
     // Inicializar Selectores de Fechas
     flatpickr(".flatpickr", { enableTime: true, dateFormat: "Y-m-d H:i", locale: "es" });
 
+    // --- AUTENTICACIÓN Y CONTROL DE SESIÓN ---
+    document.getElementById('formLogin').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login_email').value;
+      const password = document.getElementById('login_pass').value;
+
+      const { data, error } = await _supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (error) {
+        alert('Error de autenticación: ' + error.message);
+      } else {
+        verificarSesion();
+      }
+    });
+
+    async function verificarSesion() {
+      const { data: { session } } = await _supabase.auth.getSession();
+
+      if (session) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('wrapper').style.display = 'flex';
+        document.getElementById('user-display').innerHTML = `<i class="fa-solid fa-user me-1"></i> ${session.user.email}`;
+        cargarHistorial();
+      } else {
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('wrapper').style.display = 'none';
+      }
+    }
+
+    async function cerrarSesion() {
+      await _supabase.auth.signOut();
+      verificarSesion();
+    }
+
+    // --- OPERACIONES DE DATOS ---
+    
     // 1. GUARDAR TICKET DE SOPORTE
     document.getElementById('formTicket').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -377,8 +458,8 @@
       html2pdf().from(element).save(`Solicitud-${id}.pdf`).then(() => element.style.display = 'none');
     }
 
-    // Cargar historial inicial
-    cargarHistorial();
+    // Verificación inicial de sesión
+    verificarSesion();
   </script>
 </body>
 </html>
