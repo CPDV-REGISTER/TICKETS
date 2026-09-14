@@ -315,6 +315,10 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpenVnd2N2cmlqa2lxd3ZjeG1mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkxMjgxNzEsImV4cCI6MjEwNDcwNDE3MX0.QUPJZ10OiN-Oy8zUzJNjj3KW39oiRfzEqTqu-LOuQP0';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // Variables globales de estado
+    let usuarioActual = null;
+    let esAdmin = false;
+
     // Inicializar Selectores de Fechas
     flatpickr(".flatpickr", { enableTime: true, dateFormat: "Y-m-d H:i", locale: "es" });
 
@@ -340,9 +344,15 @@
       const { data: { session } } = await _supabase.auth.getSession();
 
       if (session) {
+        usuarioActual = session.user;
+        
+        // Defina aquí los correos con privilegios de administrador
+        esAdmin = usuarioActual.email === 'g.arias@colegiopedrodevaldivia.cl';
+
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('wrapper').style.display = 'flex';
-        document.getElementById('user-display').innerHTML = `<i class="fa-solid fa-user me-1"></i> ${session.user.email}`;
+        
+        aplicarPermisosVista();
         cargarHistorial();
       } else {
         document.getElementById('login-screen').style.display = 'flex';
@@ -350,8 +360,28 @@
       }
     }
 
+    function aplicarPermisosVista() {
+      const badgeRol = document.getElementById('user-display');
+      const btnUsuarios = document.getElementById('tab-user-btn');
+      const titulosSidebar = document.querySelectorAll('.sidebar-heading');
+
+      if (esAdmin) {
+        badgeRol.className = "badge bg-danger px-3 py-2";
+        badgeRol.innerHTML = `<i class="fa-solid fa-user-shield me-1"></i> Admin: ${usuarioActual.email}`;
+        if (btnUsuarios) btnUsuarios.style.display = 'block';
+        if (titulosSidebar[2]) titulosSidebar[2].style.display = 'block';
+      } else {
+        badgeRol.className = "badge bg-primary px-3 py-2";
+        badgeRol.innerHTML = `<i class="fa-solid fa-user me-1"></i> ${usuarioActual.email}`;
+        if (btnUsuarios) btnUsuarios.style.display = 'none';
+        if (titulosSidebar[2]) titulosSidebar[2].style.display = 'none';
+      }
+    }
+
     async function cerrarSesion() {
       await _supabase.auth.signOut();
+      usuarioActual = null;
+      esAdmin = false;
       verificarSesion();
     }
 
@@ -365,6 +395,7 @@
         categoria: document.getElementById('tk_cat').value,
         lugar: document.getElementById('tk_lugar').value,
         mensaje: document.getElementById('tk_msg').value,
+        usuario_email: usuarioActual.email,
         estado: 'activo'
       }, 'formTicket');
     });
@@ -377,6 +408,7 @@
         categoria: document.getElementById('sbs_cat').value,
         lugar: document.getElementById('sbs_lugar').value,
         mensaje: document.getElementById('sbs_msg').value,
+        usuario_email: usuarioActual.email,
         estado: 'activo'
       }, 'formSBS');
     });
@@ -390,6 +422,7 @@
         categoria: 'Reserva de Espacio',
         lugar: document.getElementById('dep_lugar').value,
         mensaje: detalleReserva,
+        usuario_email: usuarioActual.email,
         estado: 'activo'
       }, 'formDep');
     });
@@ -406,12 +439,23 @@
 
     // 4. LEER Y MOSTRAR HISTORIAL
     async function cargarHistorial() {
-      const { data: registros, error } = await _supabase.from('tickets').select('*').order('id', { ascending: false });
+      let consulta = _supabase.from('tickets').select('*');
+      
+      // Si no es Admin, limitar resultados al propio usuario
+      if (!esAdmin && usuarioActual) {
+        consulta = consulta.eq('usuario_email', usuarioActual.email);
+      }
+
+      const { data: registros, error } = await consulta.order('id', { ascending: false });
       const tbody = document.getElementById('tablaGeneral');
       tbody.innerHTML = '';
       if (error) return;
 
       registros.forEach(r => {
+        const botonCerrar = (esAdmin && r.estado === 'activo') 
+          ? `<button class="btn btn-sm btn-danger ms-1" onclick="abrirModalCierre(${r.id})"><i class="fa-solid fa-xmark"></i> Cerrar</button>` 
+          : '';
+
         tbody.innerHTML += `
           <tr>
             <td>#${r.id}</td>
@@ -421,7 +465,7 @@
             <td><span class="badge ${r.estado === 'activo' ? 'bg-success' : 'bg-secondary'}">${r.estado}</span></td>
             <td>
               <button class="btn btn-sm btn-info text-white" onclick="generarPDF(${r.id}, '${r.tipo}', '${r.categoria}', '${r.lugar}', '${r.estado}', '${encodeURIComponent(r.mensaje)}')"><i class="fa-solid fa-file-pdf"></i> Ver</button>
-              ${r.estado === 'activo' ? `<button class="btn btn-sm btn-danger" onclick="abrirModalCierre(${r.id})"><i class="fa-solid fa-xmark"></i> Cerrar</button>` : ''}
+              ${botonCerrar}
             </td>
           </tr>
         `;
