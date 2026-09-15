@@ -5,28 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sistema de Solicitudes y Tickets - CPDV</title>
   
-  <!-- Bootstrap 5 CSS -->
+  <!-- ================================================================= -->
+  <!-- 1. LIBRERÍAS EXTERNAS (ESTILOS Y LÓGICA DE TERCEROS)               -->
+  <!-- ================================================================= -->
+  <!-- Bootstrap 5: Utilizado para la estructura del grid, botones, modales y tablas estilizadas -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Font Awesome Icons -->
+  <!-- FontAwesome: Proporciona la iconografía del panel (iconos de usuario, tickets, carpetas, etc.) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <!-- Flatpickr (Fechas) -->
+  <!-- Flatpickr: Selector visual amigable de fecha y hora para la reserva de espacios/equipos -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <!-- Supabase JS -->
+  <!-- Supabase JS Client: Conector oficial para interactuar con la Base de Datos y la Autenticación -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- html2pdf (Para generar PDF en JS) -->
+  <!-- HTML2PDF: Genera archivos PDF descargables directamente desde elementos HTML en el navegador -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
+  <!-- ================================================================= -->
+  <!-- 2. ESTILOS PERSONALIZADOS (CSS)                                  -->
+  <!-- ================================================================= -->
   <style>
-    :root { --sidebar-width: 250px; }
+    :root { --sidebar-width: 250px; } /* Ancho fijo para la barra lateral */
     body { min-height: 100vh; background-color: #f8f9fa; }
+    
+    /* Disposición flexible para mantener la barra lateral a la izquierda y el contenido a la derecha */
     #wrapper { display: flex; width: 100%; min-height: 100vh; }
     #sidebar { width: var(--sidebar-width); background-color: #2a3f54; color: #fff; flex-shrink: 0; }
     #sidebar .nav-link { color: #c7d1db; padding: 0.7rem 1rem; margin-bottom: 0.2rem; }
     #sidebar .nav-link:hover, #sidebar .nav-link.active { color: #fff; background-color: rgba(255, 255, 255, 0.15); }
+    
     .main-content { flex-grow: 1; display: flex; flex-direction: column; }
     .sidebar-heading { font-size: 0.75rem; text-transform: uppercase; color: #8e9dae; padding: 0.8rem 1rem 0.2rem; }
     
-    /* Overlay de Autenticación */
+    /* Capa flotante que cubre la pantalla completa hasta que el usuario inicie sesión correctamente */
     #login-screen {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: #2a3f54; z-index: 9999; display: flex; align-items: center; justify-content: center;
@@ -35,7 +44,9 @@
 </head>
 <body>
 
-  <!-- PANTALLA DE LOGIN -->
+  <!-- ================================================================= -->
+  <!-- 3. INTERFAZ: PANTALLA DE AUTENTICACIÓN (LOGIN)                    -->
+  <!-- ================================================================= -->
   <div id="login-screen">
     <div class="card shadow-lg border-0 p-4" style="width: 100%; max-width: 400px;">
       <div class="text-center mb-4">
@@ -43,6 +54,7 @@
         <h4 class="fw-bold">Acceso CPDV</h4>
         <p class="text-muted small">Ingresa con tus credenciales institucionales</p>
       </div>
+      <!-- Formulario simple de correo y clave conectado a Supabase Auth -->
       <form id="formLogin">
         <div class="mb-3">
           <label class="form-label">Correo Electrónico</label>
@@ -59,16 +71,19 @@
     </div>
   </div>
 
-  <!-- CONTENEDOR PRINCIPAL DEL SISTEMA -->
+  <!-- ================================================================= -->
+  <!-- 4. INTERFAZ PRINCIPAL DEL SISTEMA (SE MUESTRA TRAS LOGUEARSE)    -->
+  <!-- ================================================================= -->
   <div id="wrapper" style="display: none;">
-
-    <!-- Sidebar Lateral -->
+    
+    <!-- 4.1 BARRA NAVEGADORA LATERAL (SIDEBAR) -->
     <nav id="sidebar" class="d-flex flex-column p-3">
       <a href="#" class="d-flex align-items-center mb-3 text-white text-decoration-none fs-5 fw-bold">
         <i class="fa-solid fa-graduation-cap me-2"></i> CPDV Solicitudes
       </a>
       <hr class="text-secondary">
       
+      <!-- Pestañas navegables mediante el sistema Tabs de Bootstrap -->
       <div class="nav nav-pills flex-column" id="v-pills-tab" role="tablist">
         <button class="nav-link active text-start" id="tab-home-btn" data-bs-toggle="pill" data-bs-target="#tab-home" type="button">
           <i class="fa-solid fa-house me-2"></i> Inicio
@@ -87,12 +102,14 @@
           <i class="fa-solid fa-building me-2"></i> Reserva Dependencias
         </button>
 
-        <div class="sidebar-heading">Administración</div>
-        <button class="nav-link text-start" id="tab-user-btn" data-bs-toggle="pill" data-bs-target="#tab-usuarios" type="button">
+        <!-- Pestaña visible EXCLUSIVAMENTE para administradores generales -->
+        <div class="sidebar-heading" id="admin-header" style="display: none;">Administración</div>
+        <button class="nav-link text-start" id="tab-user-btn" data-bs-toggle="pill" data-bs-target="#tab-usuarios" type="button" style="display: none;">
           <i class="fa-solid fa-users me-2"></i> Usuarios Autorizados
         </button>
       </div>
 
+      <!-- Botón para finalizar sesión -->
       <div class="mt-auto">
         <hr class="text-secondary">
         <button class="btn btn-outline-light w-100 text-start" onclick="cerrarSesion()">
@@ -101,8 +118,9 @@
       </div>
     </nav>
 
-    <!-- Área de Contenido -->
+    <!-- 4.2 ÁREA DE CONTENIDO DINÁMICO -->
     <div class="main-content">
+      <!-- Encabezado superior con la etiqueta de rol del usuario logueado -->
       <header class="bg-white p-3 border-bottom d-flex justify-content-between align-items-center">
         <h5 class="m-0 text-secondary">Sistema Integral de Solicitudes</h5>
         <span class="badge bg-primary px-3 py-2" id="user-display"><i class="fa-solid fa-user me-1"></i> Sesión Activa</span>
@@ -110,8 +128,8 @@
 
       <div class="container-fluid p-4">
         <div class="tab-content" id="v-pills-tabContent">
-
-          <!-- INICIO -->
+          
+          <!-- SECCIÓN: INICIO (PÁGINA DE BIENVENIDA) -->
           <div class="tab-pane fade show active" id="tab-home" role="tabpanel">
             <div class="card border-0 shadow-sm p-5 text-center bg-white">
               <i class="fa-solid fa-layer-group text-primary display-3 mb-3"></i>
@@ -120,7 +138,7 @@
             </div>
           </div>
 
-          <!-- TICKETS DE SOPORTE -->
+          <!-- SECCIÓN: TICKETS DE SOPORTE (INFORMÁTICA Y MANTENCIÓN) -->
           <div class="tab-pane fade" id="tab-tickets" role="tabpanel">
             <div class="card border-0 shadow-sm mb-4">
               <div class="card-header bg-primary text-white"><h5 class="m-0"><i class="fa-solid fa-plus me-2"></i>Nuevo Ticket de Soporte</h5></div>
@@ -155,7 +173,7 @@
             </div>
           </div>
 
-          <!-- SOLICITUDES DE COMPRA (SBS) -->
+          <!-- SECCIÓN: ADQUISICIONES / COMPRAS (SBS) -->
           <div class="tab-pane fade" id="tab-sbs" role="tabpanel">
             <div class="card border-0 shadow-sm mb-4">
               <div class="card-header bg-warning text-dark"><h5 class="m-0"><i class="fa-solid fa-cart-plus me-2"></i>Nueva Solicitud de Compra (SBS)</h5></div>
@@ -183,7 +201,7 @@
             </div>
           </div>
 
-          <!-- RESERVA DEPENDENCIAS Y DEPORTES -->
+          <!-- SECCIÓN: RESERVA DE ESPACIOS, AUDIO Y DEPORTES -->
           <div class="tab-pane fade" id="tab-dependencias" role="tabpanel">
             <div class="card border-0 shadow-sm mb-4">
               <div class="card-header bg-success text-white"><h5 class="m-0"><i class="fa-solid fa-calendar-plus me-2"></i>Reserva de Espacio / Audio / Deportes</h5></div>
@@ -208,6 +226,7 @@
                     </div>
                     <div class="col-md-6">
                       <label class="form-label">Fecha / Hora Inicio</label>
+                      <!-- Se aplica el Selector de fecha y hora enriquecido (Flatpickr) -->
                       <input type="text" class="form-control flatpickr" id="dep_inicio" required>
                     </div>
                     <div class="col-md-6">
@@ -227,25 +246,37 @@
             </div>
           </div>
 
-          <!-- USUARIOS AUTORIZADOS -->
+          <!-- SECCIÓN: MÓDULO DE GESTIÓN DE ROLES (ADMIN GENERAL) -->
           <div class="tab-pane fade" id="tab-usuarios" role="tabpanel">
             <div class="card border-0 shadow-sm mb-4">
-              <div class="card-header bg-dark text-white"><h5 class="m-0"><i class="fa-solid fa-user-shield me-2"></i>Personal Autorizado</h5></div>
+              <div class="card-header bg-dark text-white"><h5 class="m-0"><i class="fa-solid fa-user-shield me-2"></i>Administración de Permisos</h5></div>
               <div class="card-body">
-                <table class="table table-striped align-middle">
-                  <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th></tr></thead>
-                  <tbody>
-                    <tr><td>Gabriel Arias</td><td>g.arias@colegiopedrodevaldivia.cl</td><td><span class="badge bg-danger">Administrador</span></td></tr>
-                    <tr><td>Soporte Técnico</td><td>soporte@colegiopedrodevaldivia.cl</td><td><span class="badge bg-info text-dark">Técnico</span></td></tr>
-                  </tbody>
-                </table>
+                <p class="text-muted small">Copia el Email del usuario para cambiar su rol de gestión dentro de la tabla `profiles`:</p>
+                <div class="row g-2 mb-3">
+                  <div class="col-md-5">
+                    <input type="email" id="rol_email" class="form-control" placeholder="correo@colegiopedrodevaldivia.cl">
+                  </div>
+                  <div class="col-md-4">
+                    <select id="rol_select" class="form-select">
+                      <option value="usuario">Usuario Estándar</option>
+                      <option value="admin_informatica">Admin Informática</option>
+                      <option value="admin_mantencion">Admin Mantención</option>
+                      <option value="admin_sbs">Admin Compras (SBS)</option>
+                      <option value="admin_espacios">Admin Espacios</option>
+                      <option value="admin_general">Admin General</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3">
+                    <button class="btn btn-primary w-100" onclick="asignarRol()"><i class="fa-solid fa-floppy-disk me-1"></i> Guardar Rol</button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
         </div>
 
-        <!-- TABLA GENERAL DE REGISTROS -->
+        <!-- 4.3 TABLA GENERAL DE HISTORIAL Y SEGUIMIENTO -->
         <div class="card border-0 shadow-sm mt-4">
           <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
             <h5 class="m-0"><i class="fa-solid fa-list me-2"></i>Historial de Solicitudes</h5>
@@ -260,10 +291,12 @@
                     <th>Módulo</th>
                     <th>Detalle / Categoría</th>
                     <th>Ubicación</th>
+                    <th>Solicitante</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
+                <!-- El contenido de la tabla se inserta dinámicamente según los permisos del usuario -->
                 <tbody id="tablaGeneral"></tbody>
               </table>
             </div>
@@ -274,15 +307,22 @@
     </div>
   </div>
 
-  <!-- Modal Cierre -->
+  <!-- ================================================================= -->
+  <!-- 5. COMPONENTES EMERGENTES (MODALES Y PLANTILLAS OCULTAS)        -->
+  <!-- ================================================================= -->
+  
+  <!-- MODAL: CIERRE DE SOLICITUD (Solo accesible por Admins de área autorizados) -->
   <div class="modal fade" id="modalCerrar" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content">
-        <div class="modal-header bg-danger text-white"><h5 class="modal-title">Finalizar Solicitud</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">Finalizar Solicitud</h5>
+          <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
         <div class="modal-body">
           <input type="hidden" id="cerrar_id">
           <label class="form-label">Comentario o trabajo realizado</label>
-          <textarea class="form-control" id="cerrar_txt" rows="3" required></textarea>
+          <textarea class="form-control" id="cerrar_txt" rows="3" placeholder="Detalle qué acciones se ejecutaron para dar solución..." required></textarea>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -292,7 +332,8 @@
     </div>
   </div>
 
-  <!-- PLANTILLA OCULTA PARA IMPRIMIR PDF -->
+  <!-- PLANTILLA OCULTA: GENERACIÓN DE PDF -->
+  <!-- Permanece oculta hasta que html2pdf la renderiza temporalmente para imprimir el comprobante -->
   <div id="pdf-template" style="display:none; padding:20px; font-family:sans-serif;">
     <h2 style="color:#2a3f54;">Colegio Pedro de Valdivia</h2>
     <h3>Comprobante de Solicitud #<span id="pdf-id"></span></h3>
@@ -304,51 +345,55 @@
     <p><strong>Mensaje:</strong> <span id="pdf-msg"></span></p>
   </div>
 
-  <!-- Scripts -->
+  <!-- ================================================================= -->
+  <!-- 6. PROGRAMACIÓN Y LÓGICA DE CONTROL (JAVASCRIPT)                 -->
+  <!-- ================================================================= -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
 
   <script>
-    // Configuración Supabase
+    // -----------------------------------------------------------------
+    // A. CONFIGURACIÓN Y CLIENTE DE SUPABASE
+    // -----------------------------------------------------------------
     const SUPABASE_URL = 'https://cizugwcvrijkiqwvcxmf.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpenVnd2N2cmlqa2lxd3ZjeG1mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkxMjgxNzEsImV4cCI6MjEwNDcwNDE3MX0.QUPJZ10OiN-Oy8zUzJNjj3KW39oiRfzEqTqu-LOuQP0';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Variables globales de estado
+    // Variables globales para rastrear la identidad y el nivel de acceso del usuario conectado
     let usuarioActual = null;
-    let esAdmin = false;
+    let rolUsuario = 'usuario'; // Por defecto es usuario sin privilegios
 
-    // Inicializar Selectores de Fechas
+    // Inicializa el selector amigable de fecha y hora en español
     flatpickr(".flatpickr", { enableTime: true, dateFormat: "Y-m-d H:i", locale: "es" });
 
-    // --- AUTENTICACIÓN Y CONTROL DE SESIÓN ---
+    // -----------------------------------------------------------------
+    // B. AUTENTICACIÓN Y VALIDACIÓN DE SESIÓN
+    // -----------------------------------------------------------------
+    
+    // Iniciar sesión contra el servicio auth de Supabase
     document.getElementById('formLogin').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('login_email').value;
       const password = document.getElementById('login_pass').value;
 
-      const { data, error } = await _supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
-      });
-
-      if (error) {
-        alert('Error de autenticación: ' + error.message);
-      } else {
-        verificarSesion();
-      }
+      const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+      if (error) alert('Error: ' + error.message);
+      else verificarSesion();
     });
 
+    // Revisa si hay un token activo, obtiene el rol desde la tabla 'profiles' y adapta la UI
     async function verificarSesion() {
       const { data: { session } } = await _supabase.auth.getSession();
 
       if (session) {
         usuarioActual = session.user;
         
-        // Defina aquí los correos con privilegios de administrador
-        esAdmin = usuarioActual.email === 'g.arias@colegiopedrodevaldivia.cl';
+        // Consulta la tabla 'profiles' para leer el rol asignado a la ID del usuario
+        const { data: perfil } = await _supabase.from('profiles').select('rol').eq('id', usuarioActual.id).single();
+        rolUsuario = perfil ? perfil.rol : 'usuario';
 
+        // Oculta el login y despliega la aplicación
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('wrapper').style.display = 'flex';
         
@@ -360,34 +405,48 @@
       }
     }
 
+    // Configura qué botones o secciones se muestran en pantalla en función del rol
     function aplicarPermisosVista() {
       const badgeRol = document.getElementById('user-display');
       const btnUsuarios = document.getElementById('tab-user-btn');
-      const titulosSidebar = document.querySelectorAll('.sidebar-heading');
+      const adminHeader = document.getElementById('admin-header');
 
-      if (esAdmin) {
-        badgeRol.className = "badge bg-danger px-3 py-2";
-        badgeRol.innerHTML = `<i class="fa-solid fa-user-shield me-1"></i> Admin: ${usuarioActual.email}`;
-        if (btnUsuarios) btnUsuarios.style.display = 'block';
-        if (titulosSidebar[2]) titulosSidebar[2].style.display = 'block';
-      } else {
-        badgeRol.className = "badge bg-primary px-3 py-2";
-        badgeRol.innerHTML = `<i class="fa-solid fa-user me-1"></i> ${usuarioActual.email}`;
-        if (btnUsuarios) btnUsuarios.style.display = 'none';
-        if (titulosSidebar[2]) titulosSidebar[2].style.display = 'none';
-      }
+      const esAdminGlobal = rolUsuario === 'admin_general';
+      
+      // Cambia el color de la etiqueta superior
+      badgeRol.className = esAdminGlobal ? "badge bg-danger px-3 py-2" : "badge bg-primary px-3 py-2";
+      badgeRol.innerHTML = `<i class="fa-solid fa-user-shield me-1"></i> [${rolUsuario.toUpperCase()}] ${usuarioActual.email}`;
+      
+      // Habilita el menú lateral de gestión de usuarios únicamente al 'admin_general'
+      btnUsuarios.style.display = esAdminGlobal ? 'block' : 'none';
+      adminHeader.style.display = esAdminGlobal ? 'block' : 'none';
     }
 
+    // Cierra la sesión activa en el navegador y reinicia la vista
     async function cerrarSesion() {
       await _supabase.auth.signOut();
       usuarioActual = null;
-      esAdmin = false;
+      rolUsuario = 'usuario';
       verificarSesion();
     }
 
-    // --- OPERACIONES DE DATOS ---
+    // Permite al Administrador General actualizar el rol de cualquier cuenta usando su correo
+    async function asignarRol() {
+      const email = document.getElementById('rol_email').value;
+      const nuevoRol = document.getElementById('rol_select').value;
+      
+      if(!email) return alert('Ingrese un email válido');
+
+      const { error } = await _supabase.from('profiles').update({ rol: nuevoRol }).eq('email', email);
+      if(error) alert('Error al actualizar rol: ' + error.message);
+      else alert(`Rol de ${email} actualizado a ${nuevoRol}`);
+    }
+
+    // -----------------------------------------------------------------
+    // C. REGISTRO Y ENVÍO DE SOLICITUDES
+    // -----------------------------------------------------------------
     
-    // 1. GUARDAR TICKET DE SOPORTE
+    // Captura Formulario de Soporte (Informática / Mantención)
     document.getElementById('formTicket').addEventListener('submit', async (e) => {
       e.preventDefault();
       await guardarSolicitud({
@@ -400,7 +459,7 @@
       }, 'formTicket');
     });
 
-    // 2. GUARDAR COMPRA SBS
+    // Captura Formulario de Compras (SBS)
     document.getElementById('formSBS').addEventListener('submit', async (e) => {
       e.preventDefault();
       await guardarSolicitud({
@@ -413,7 +472,7 @@
       }, 'formSBS');
     });
 
-    // 3. GUARDAR RESERVA DE ESPACIO
+    // Captura Formulario de Reservas (Espacios, Audio, Deportes)
     document.getElementById('formDep').addEventListener('submit', async (e) => {
       e.preventDefault();
       const detalleReserva = `Responsable: ${document.getElementById('dep_resp').value} | Desde: ${document.getElementById('dep_inicio').value} Hasta: ${document.getElementById('dep_fin').value} | Motivo: ${document.getElementById('dep_msg').value}`;
@@ -427,24 +486,29 @@
       }, 'formDep');
     });
 
+    // Función genérica reutilizable para escribir filas en la tabla 'tickets' de Supabase
     async function guardarSolicitud(datos, formId) {
       const { error } = await _supabase.from('tickets').insert([datos]);
       if (error) alert('Error: ' + error.message);
       else {
         alert('¡Solicitud registrada con éxito!');
         document.getElementById(formId).reset();
-        cargarHistorial();
+        cargarHistorial(); // Refresca la tabla automáticamente
       }
     }
 
-    // 4. LEER Y MOSTRAR HISTORIAL
+    // -----------------------------------------------------------------
+    // D. CARGA, FILTRADO Y PERMISOS DE CIERRE DE SOLICITUDES
+    // -----------------------------------------------------------------
     async function cargarHistorial() {
       let consulta = _supabase.from('tickets').select('*');
       
-      // Si no es Admin, limitar resultados al propio usuario
-      if (!esAdmin && usuarioActual) {
+      // REGLA DE VISIBILIDAD:
+      // Si el rol es 'usuario', únicamente consulta sus propios registros
+      if (rolUsuario === 'usuario') {
         consulta = consulta.eq('usuario_email', usuarioActual.email);
       }
+      // Los administradores cargan el listado general completo para su revisión
 
       const { data: registros, error } = await consulta.order('id', { ascending: false });
       const tbody = document.getElementById('tablaGeneral');
@@ -452,7 +516,20 @@
       if (error) return;
 
       registros.forEach(r => {
-        const botonCerrar = (esAdmin && r.estado === 'activo') 
+        // MATRIZ DE PERMISOS PARA MOSTRAR / OCULTAR EL BOTÓN DE CIERRE:
+        let puedeCerrar = false;
+        
+        // 1. Admin General: Puede cerrar cualquier ticket en el sistema
+        if (rolUsuario === 'admin_general') puedeCerrar = true;
+        
+        // 2. Admins de Área: Solo pueden cerrar tickets asignados a su departamento
+        if (rolUsuario === 'admin_informatica' && r.tipo === 'Ticket: Informática') puedeCerrar = true;
+        if (rolUsuario === 'admin_mantencion' && r.tipo === 'Ticket: Mantención') puedeCerrar = true;
+        if (rolUsuario === 'admin_sbs' && r.tipo === 'Compra SBS') puedeCerrar = true;
+        if (rolUsuario === 'admin_espacios' && r.tipo.startsWith('Reserva:')) puedeCerrar = true;
+
+        // Se construye el botón de cierre únicamente si tiene los permisos requeridos y la solicitud está 'activa'
+        const botonCerrar = (puedeCerrar && r.estado === 'activo') 
           ? `<button class="btn btn-sm btn-danger ms-1" onclick="abrirModalCierre(${r.id})"><i class="fa-solid fa-xmark"></i> Cerrar</button>` 
           : '';
 
@@ -462,6 +539,7 @@
             <td><strong class="text-primary">${r.tipo}</strong></td>
             <td>${r.categoria}</td>
             <td>${r.lugar}</td>
+            <td><small class="text-muted">${r.usuario_email || 'Anónimo'}</small></td>
             <td><span class="badge ${r.estado === 'activo' ? 'bg-success' : 'bg-secondary'}">${r.estado}</span></td>
             <td>
               <button class="btn btn-sm btn-info text-white" onclick="generarPDF(${r.id}, '${r.tipo}', '${r.categoria}', '${r.lugar}', '${r.estado}', '${encodeURIComponent(r.mensaje)}')"><i class="fa-solid fa-file-pdf"></i> Ver</button>
@@ -472,12 +550,17 @@
       });
     }
 
-    // 5. CERRAR TICKET
+    // -----------------------------------------------------------------
+    // E. OPERACIONES ADICIONALES (CIERRE Y GENERACIÓN DE PDF)
+    // -----------------------------------------------------------------
+    
+    // Despliega el modal emergente para pedir el comentario de solución antes de cerrar
     function abrirModalCierre(id) {
       document.getElementById('cerrar_id').value = id;
       new bootstrap.Modal(document.getElementById('modalCerrar')).show();
     }
 
+    // Actualiza el registro en Supabase a 'cerrado' guardando la justificación
     async function confirmarCierre() {
       const id = document.getElementById('cerrar_id').value;
       const comentario = document.getElementById('cerrar_txt').value;
@@ -488,7 +571,7 @@
       cargarHistorial();
     }
 
-    // 6. GENERAR Y DESCARGAR PDF COMPROBANTE
+    // Puebla la plantilla HTML oculta con los datos de la fila y descarga el archivo PDF
     function generarPDF(id, tipo, cat, lugar, estado, msg) {
       document.getElementById('pdf-id').innerText = id;
       document.getElementById('pdf-modulo').innerText = tipo;
@@ -502,7 +585,7 @@
       html2pdf().from(element).save(`Solicitud-${id}.pdf`).then(() => element.style.display = 'none');
     }
 
-    // Verificación inicial de sesión
+    // Comprobación inicial automática al cargar la página
     verificarSesion();
   </script>
 </body>
